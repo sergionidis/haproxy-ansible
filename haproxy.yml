@@ -1,0 +1,45 @@
+---
+
+  - name: Creamos un SG para el HAproxy
+    ec2_group:
+      name: HAproxy
+      description: SG que permite el SSH y el HTTP para el servidor HAproxy
+      region: eu-west-1
+      rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 0.0.0.0/0
+      rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+  - name: Provisionamos el servidor HAproxy
+    ec2:
+      key_name: propia
+      instance_type: t2.micro
+      image: ami-0a3f5ff1cb905da33
+      wait: yes
+      region: eu-west-1
+      group: HAproxy
+      count: 1
+      vpc_subnet_id: subnet-a1c19dfb
+      assign_public_ip: yes
+      instance_tags:
+        Name: haserver
+    register: frontend
+  
+  - name: incluyo el servidor al fichero de inventario
+    add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: haserver
+    loop: "{{ frontend.instances }}"
+  - name: esperamos a que inicie el SSH
+    wait_for:
+      host: "{{ item.public_dns_name }}"
+      port: 22
+      state: started
+    loop: "{{ frontend.instances }}"  

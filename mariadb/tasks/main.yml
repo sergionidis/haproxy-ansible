@@ -1,0 +1,26 @@
+---
+# tasks file for mariadb
+    
+    - name: install mariadb
+      yum:
+        name:
+          - mariadb-server
+          - python3-PyMySQL
+        state: latest
+    - name: start mariadb
+      service:
+        name: mariadb
+        enabled: true
+        state: started
+       
+    - name: creo usuario y permito desde todos los hosts
+      mysql_user:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        user: root
+        check_implicit_admin: true
+        password: "{{ mysql_root_password }}"
+        priv: "*.*:ALL,GRANT"
+        host: "%"
+        state: present
+

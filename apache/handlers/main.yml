@@ -1,0 +1,7 @@
+---
+# handlers file for apache
+- name: reiniciar apache
+  service: 
+    name: "httpd"
+    state: restarted
+  become: true

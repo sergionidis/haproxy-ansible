@@ -1,0 +1,50 @@
+---
+
+  - name: Creamos un SG para el backend
+    ec2_group:
+      name: Apaches
+      description: SG que permite el SSH y el HTTP para los servidores Apaches
+      region: eu-west-1
+      rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+  - name: Provisionamos los servidores Apaches
+    ec2:
+      key_name: propia
+      instance_type: t2.micro
+      image: ami-0a3f5ff1cb905da33
+      wait: yes
+      region: eu-west-1
+      group: Apaches
+      count: 2
+      vpc_subnet_id: subnet-a1c19dfb
+      assign_public_ip: yes
+      instance_tags:
+        Name: Sapaches
+    register: backend
+  
+  - name: incluyo los servidores al fichero de inventario
+    add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: Sapaches
+    loop: "{{ backend.instances }}"
+
+  - name: esperamos a que inicie el SSH
+    wait_for:
+      host: "{{ item.public_dns_name }}"
+      port: 22
+      state: started
+    loop: "{{ backend.instances }}"
+
+
+ 

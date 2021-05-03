@@ -1,0 +1,19 @@
+---
+# tasks file for 
+- name: Install httpd and php program
+  package:
+    name:
+      - httpd
+      - php
+      - php-mysql
+    state: present
+
+- name: Copiamos configuracion tuneada del index
+  template:
+    src: "index.php"
+    dest: "/var/www/html/"
+  notify: reiniciar apache
+- name: starting httpd service
+  service:
+    name: "httpd"
+    state: started

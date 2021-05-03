@@ -1,0 +1,48 @@
+---
+
+  - name: Creamos un SG para la base de datos
+    ec2_group:
+      name: dbserver
+      description: SG que permite el SSH y mysql para la DB
+      region: eu-west-1
+      rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 3306
+        to_port: 3306
+        cidr_ip: 0.0.0.0/0
+      rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+  - name: Provisionamos el servidor de bases de datos
+    ec2:
+      key_name: propia
+      instance_type: t2.micro
+      image: ami-032e5b6af8a711f30 
+      wait: yes
+      region: eu-west-1
+      group: dbserver
+      count: 1
+      vpc_subnet_id: subnet-a1c19dfb
+      assign_public_ip: yes
+      instance_tags:
+        Name: dbserver
+    register: db
+  
+  - name: incluyo el servidor al fichero de inventario
+    add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: dbserver
+    loop: "{{ db.instances }}"
+
+  - name: esperamos a que inicie el SSH
+    wait_for:
+      host: "{{ item.public_dns_name }}"
+      port: 22
+      state: started
+    loop: "{{ db.instances }}"
+

@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  tasks:
+    - include: apache.yml
+    - include: haproxy.yml
+    - include: db.yml
+
+- hosts: Sapaches
+  remote_user: ec2-user
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: role de apache
+    include_role:
+      name: apache
+
+- hosts: haserver
+  remote_user: ec2-user
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: rol de haproxy 
+    include_role:
+      name: haproxy
+
+- hosts: dbserver
+  vars:
+    mysql_root_password: PasswordSecreta
+  remote_user: ec2-user
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: rol de mariadb 
+    include_role:
+      name: mariadb
