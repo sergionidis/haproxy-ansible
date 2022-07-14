@@ -1,6 +1,6 @@
 # transparent
 
-# HAproxy, apache backend y conexion con una base de datos mariadb
+# HAproxy, apache backend y conexion con una base de datos mariadb.
 
 Ansible para desplegar un haproxy, servidores apache, y un fichero php de prueba para conectar con mariadb mediante roles.
 
